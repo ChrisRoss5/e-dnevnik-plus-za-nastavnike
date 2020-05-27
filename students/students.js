@@ -110,17 +110,6 @@
     });
   }
 
-  function getStats(obj) {
-    let stats = "";
-    let words = ["Odličnih", "Vrlo dobrih", "Dobrih", "Dovoljnih", "Nedovoljnih"];
-    for (let i = 5; i > 0; i--) {
-      if (obj[i]) {
-        stats += 2
-      }
-    }
-    return "Odličnih: " + obj["5"];
-  }
-
   function getAverage(student) {
     return new Promise((resolve) => {
 
