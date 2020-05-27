@@ -68,10 +68,3 @@ input {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-
-@font-face {
-  font-family: "glitch";
-  font-style: normal;
-  font-weight: 700;
-  src: url("chrome-extension://__MSG_@@extension_id__/themes/matrix/customFont.ttf");
-}
