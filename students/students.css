@@ -45,7 +45,7 @@
   font-size: 16px;
   padding: 7px;
   border: 1px solid #2296da;
-  border-radius: 5px;
+  border-radius: 3px;
   opacity: 0;
   transition: 1s color;
 }
@@ -54,6 +54,10 @@
   display: inline-block;
   transform: scale(.1);
   animation: easeAvg 1s forwards;
+}
+
+.studentAvg:last-of-type {
+  margin-left: 10px;
 }
 
 @keyframes easeAvg {
@@ -141,4 +145,8 @@
   padding-left: 3px;
   font-size: 14px;
   font-weight: bold;
+}
+
+a.ed-row.student:hover .studentAvg {
+  background: #fff;
 }

@@ -5,7 +5,7 @@
   "author": "Kristijan Rosandić",
   "name": "e-Dnevnik Plus za nastavnike", "short_name": "e-Dnevnik+ Nastavnici",
   "description": "Napredne mogućnosti e-Dnevnika za nastavnike.",
-  "version": "1.0.0.1",
+  "version": "1.0.0.2",
 
   "permissions": [
     "https://e-dnevnik.skole.hr/"

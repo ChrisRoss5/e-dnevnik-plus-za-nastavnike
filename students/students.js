@@ -23,11 +23,13 @@
     let totalAvgs = 0, totalAvgsRoundedSum = 0;
     let totalGradesCount = 0, totalGradesSum = 0;
 
+    var startTime = Date.now();
     students.forEach((student) => {
       studentsQueue.push(getAverage(student));
     });
 
     Promise.all(studentsQueue).then((values) => {
+      console.log("Elapsed time (ms): " + (Date.now() - startTime));
 
       for (let i = 0; i < values.length; i++) {
         if (!values[i]) {continue;}
@@ -118,9 +120,8 @@
 
       let parser = new DOMParser();
       let xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
+      xhr.open("GET", url, false);
       xhr.send();
-      xhr.onload = () => {
         try {
 
           let doc = parser.parseFromString(xhr.responseText, "text/html");
@@ -139,9 +140,9 @@
             }
           });
 
-
           let alignRight = student.querySelector(".right");
           let averageContainer = document.createElement("div");
+          let numOfGradesContainer = document.createElement("div");
           let avgNumber = gradesSum / totalGrades;
           resolve({gradesEach: gradesEach, gradesCount: totalGrades, gradesSum: gradesSum, avg: avgNumber});
 
@@ -150,17 +151,18 @@
           }
 
           avgNumber = isNaN(avgNumber) ? "0,00" : avgNumber.toFixed(2).toString().replace(".", ",");
-          let avgTitle = "Broj ocjena: " + totalGrades + " | Zbroj ocjena: " + gradesSum;
-
-          averageContainer.className = "studentAvg";
+          averageContainer.className = numOfGradesContainer.className = "studentAvg";
           averageContainer.textContent = avgNumber;
-          averageContainer.title = avgTitle;
+          numOfGradesContainer.textContent = totalGrades;
+          averageContainer.title = "Prosjek ocjena";
+          numOfGradesContainer.title = "Broj ocjena";
           alignRight.appendChild(averageContainer);
+          alignRight.appendChild(numOfGradesContainer);
+
 
         } catch(e) {
           resolve(false);
         }
-      };
 
     });
   }
