@@ -5,9 +5,18 @@
   let plusButton = document.createElement("div");
   plusButton.className = "button2 plus-button";
   plusButton.textContent = "Plus";
+
+  /* unavailable-unavailable-unavailable-unavailable-unavailable-unavailable */
+  let notAvailable = document.createElement("div");
+  notAvailable.className = "plus-button-down-note";
+  notAvailable.innerHTML = "Opcija je privremeno onemogućena kako bi \
+    <br> se smanjio rizik od preopterećenja sustava.";
+  plusButton.appendChild(notAvailable);
+  /* unavailable-unavailable-unavailable-unavailable-unavailable-unavailable */
+
   randomButton.after(plusButton);
 
-  plusButton.onclick = plusClicked;
+  //plusButton.onclick = plusClicked;
 
   function plusClicked() {
 
@@ -29,7 +38,7 @@
     });
 
     Promise.all(studentsQueue).then((values) => {
-      console.log("Elapsed time (ms): " + (Date.now() - startTime));
+      console.log("[e-D+] Vrijeme učitavanja (ms): " + (Date.now() - startTime));
 
       for (let i = 0; i < values.length; i++) {
         if (!values[i]) {continue;}
@@ -116,53 +125,59 @@
     return new Promise((resolve) => {
 
       let url = student.href;
+      console.log(url);
+
       if (!url) { resolve(false); return; }
 
       let parser = new DOMParser();
       let xhr = new XMLHttpRequest();
       xhr.open("GET", url, false);
       xhr.send();
-        try {
 
-          let doc = parser.parseFromString(xhr.responseText, "text/html");
-          let totalGrades = 0, gradesSum = 0;
-          let gradesEach = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
+      try {
 
-          let gradesTable = doc.getElementById("tbl-ocjene");
-          gradesTable.querySelectorAll("td[id^='grade']").forEach((gradeBlock) => {
-            let grades = gradeBlock.innerText.match(/\d+/g);
-            if (grades) {
-              for (let i = 0; i < grades.length; i++) {
-                gradesSum += parseInt(grades[i]);
-                gradesEach[grades[i].toString()]++;
-                totalGrades++;
-              }
+        let doc = parser.parseFromString(xhr.responseText, "text/html");
+        let totalGrades = 0, gradesSum = 0;
+        let gradesEach = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
+
+        let gradesTable = doc.getElementById("tbl-ocjene");
+        gradesTable.querySelectorAll("td[id^='grade']").forEach((gradeBlock) => {
+          let grades = gradeBlock.innerText.match(/\d+/g);
+          if (grades) {
+            for (let i = 0; i < grades.length; i++) {
+              gradesSum += parseInt(grades[i]);
+              gradesEach[grades[i].toString()]++;
+              totalGrades++;
             }
-          });
-
-          let alignRight = student.querySelector(".right");
-          let averageContainer = document.createElement("div");
-          let numOfGradesContainer = document.createElement("div");
-          let avgNumber = gradesSum / totalGrades;
-          resolve({gradesEach: gradesEach, gradesCount: totalGrades, gradesSum: gradesSum, avg: avgNumber});
-
-          if (avgNumber < 1.5) {
-            averageContainer.style.color = "red";
           }
+        });
 
-          avgNumber = isNaN(avgNumber) ? "0,00" : avgNumber.toFixed(2).toString().replace(".", ",");
-          averageContainer.className = numOfGradesContainer.className = "studentAvg";
-          averageContainer.textContent = avgNumber;
-          numOfGradesContainer.textContent = totalGrades;
-          averageContainer.title = "Prosjek ocjena";
-          numOfGradesContainer.title = "Broj ocjena";
-          alignRight.appendChild(averageContainer);
-          alignRight.appendChild(numOfGradesContainer);
+        let alignRight = student.querySelector(".right");
+        let averageContainer = document.createElement("div");
+        let numOfGradesContainer = document.createElement("div");
+        let avgNumber = gradesSum / totalGrades;
+        resolve({gradesEach: gradesEach, gradesCount: totalGrades, gradesSum: gradesSum, avg: avgNumber});
 
-
-        } catch(e) {
-          resolve(false);
+        if (avgNumber < 1.5) {
+          averageContainer.style.color = "red";
         }
+
+        avgNumber = isNaN(avgNumber) ? "0,00" : avgNumber.toFixed(2).toString().replace(".", ",");
+        averageContainer.className = numOfGradesContainer.className = "studentAvg";
+        averageContainer.textContent = avgNumber;
+        numOfGradesContainer.textContent = totalGrades;
+        averageContainer.title = "Prosjek ocjena";
+        numOfGradesContainer.title = "Broj ocjena";
+        console.log(avgNumber, totalGrades);
+
+        alignRight.appendChild(averageContainer);
+        alignRight.appendChild(numOfGradesContainer);
+
+      } catch(e) {
+
+        console.log(e);
+        resolve(false);
+      }
 
     });
   }
