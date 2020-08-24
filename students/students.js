@@ -7,16 +7,16 @@
   plusButton.textContent = "Plus";
 
   /* unavailable-unavailable-unavailable-unavailable-unavailable-unavailable */
-  let notAvailable = document.createElement("div");
+  /* let notAvailable = document.createElement("div");
   notAvailable.className = "plus-button-down-note";
   notAvailable.innerHTML = "Opcija je privremeno onemogućena kako bi \
     <br> se smanjio rizik od preopterećenja sustava.";
-  plusButton.appendChild(notAvailable);
+  plusButton.appendChild(notAvailable); */
   /* unavailable-unavailable-unavailable-unavailable-unavailable-unavailable */
 
   randomButton.after(plusButton);
 
-  //plusButton.onclick = plusClicked;
+  plusButton.onclick = plusClicked;  // unavailable
 
   function plusClicked() {
 

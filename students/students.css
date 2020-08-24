@@ -1,13 +1,13 @@
 .plus-button {
   position: relative;
   max-width: 50px;
-  background: #d3d3d3 !important; /* unavailable */
-  /* background: #2296da !important; */
+  /* background: #d3d3d3 !important; */ /* unavailable */
+  background: #2296da !important;
   margin-left: 5px;
 }
 
 .plus-button:hover {
-  cursor: help;
+  cursor: pointer/* help *//* unavailable */;
 }
 
 .content>.right>.button2 {
