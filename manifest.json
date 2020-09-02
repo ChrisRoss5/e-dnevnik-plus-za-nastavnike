@@ -3,8 +3,8 @@
   "manifest_version": 2,
 
   "author": "Kristijan Rosandić",
-  "name": "e-Dnevnik Plus za nastavnike", "short_name": "e-Dnevnik+ Nastavnici",
-  "description": "Napredne mogućnosti e-Dnevnika za nastavnike.",
+  "name": "e-dnevnik Plus za nastavnike", "short_name": "e-dnevnik+ Nastavnici",
+  "description": "Napredne mogućnosti e-dnevnika za nastavnike.",
   "version": "1.0.0.3",
 
   "permissions": [

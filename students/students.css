@@ -7,7 +7,9 @@
 }
 
 .plus-button:hover {
-  cursor: pointer/* help *//* unavailable */;
+  cursor: pointer;
+  background: #2297dac2 !important;
+  /*cursor: help */ /* unavailable */
 }
 
 .content>.right>.button2 {
@@ -125,6 +127,20 @@
   border-color: #D3D3D4;
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
+}
+
+.plus-subject-row {
+  font-size: 18px;
+  width: calc(100% + 10px);
+  padding: 3px 10px;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  transition: 150ms background-color, 150ms color;
+}
+
+.plus-subject-row:hover {
+  background: #2296da38;
+  color: #353535;
 }
 
 .statsTable {

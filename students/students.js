@@ -1,42 +1,121 @@
 (() => {
   "use strict";
 
+  // Tip korisnika (Administrator > Ravnatelj > Stručni suradnik > Razrednik > Nastavnik)
+  const userType = document.querySelector(".user .type").textContent.trim();
+  const parser = new DOMParser();
+
+  // Stvaranje gumba 'Plus'
   let randomButton = document.getElementsByClassName("icon-random")[0];
   let plusButton = document.createElement("div");
+  let plusButtonClicked = false;
   plusButton.className = "button2 plus-button";
   plusButton.textContent = "Plus";
+  randomButton.after(plusButton);
+  plusButton.onclick = plusClicked;
 
-  /* unavailable-unavailable-unavailable-unavailable-unavailable-unavailable */
-  /* let notAvailable = document.createElement("div");
+  /*
+  Makni komentar kako bi onemogućio gumb 'Plus'; CSS:4:12
+  ..............................................
+  let notAvailable = document.createElement("div");
   notAvailable.className = "plus-button-down-note";
   notAvailable.innerHTML = "Opcija je privremeno onemogućena kako bi \
     <br> se smanjio rizik od preopterećenja sustava.";
-  plusButton.appendChild(notAvailable); */
-  /* unavailable-unavailable-unavailable-unavailable-unavailable-unavailable */
+  plusButton.appendChild(notAvailable);
+  plusButtonClicked = true;
+  */
 
-  randomButton.after(plusButton);
-
-  plusButton.onclick = plusClicked;  // unavailable
-
+  /**
+   * Klikom na gumb 'Plus' izračunavaju se prosjeci.
+   * Ako nije prijavljen nastavnik, otvara se popis predmeta za razred.
+   * Jedino nastavnik odmah ulaskom u učenika vidi tablice ocjena,
+   * a svi ostali rankovi imaju pristup popisu predmeta.
+   * @listens onclick
+   */
   function plusClicked() {
 
-    if (plusButton.classList.contains("plusClicked")) {
+    // Gumb je moguće kliknuti samo jednom
+    if (plusButtonClicked) return false;
+    plusButtonClicked = true;
+
+    // Popis učenika
+    let students = document.querySelectorAll("#content > a.student");
+    if (!students.length) {
+      plusButton.classList.add("plusClicked");
       return false;
     }
+
+    if (userType == "nastavnik") {
+      return loadStudents(students);  // Izravno učitavanje
+    }
+
+    // Korisnik bira koji predmet se uzima za svakog učenika
+    plusButton.style.maxWidth = "unset";
+    plusButton.textContent = "Odaberite predmet";
+
+    // Dropdown lista predmeta
+    const subjectsList = document.createElement("div");
+    subjectsList.className = "plus-button-down-note";
+    plusButton.appendChild(subjectsList);
+
+    // Dobavljanje predmeta
+    const doc = getPage("https://e-dnevnik.skole.hr/admin_class/class_courses");
+    doc.querySelectorAll("#content .class_course").forEach(subject => {
+      subject = subject.firstChild.textContent.trim().replace(/^\d*\./, "").trim();
+
+      const row = document.createElement("div");
+      row.className = "plus-subject-row";
+      row.textContent = subject;
+
+      subjectsList.appendChild(row).onclick = () => {
+
+        // Klikom na predmet dobavljaju se linkovi od svakog učenika prema tome predmetu
+        getStudentSubjectLinks(students, subject);
+      };
+    });
+  }
+
+  /**
+   * Dobavlja i prosljeđuje veze prema predmetu za svakog učenika
+   * @param {HTMLCollection} students - Učenici
+   * @param {String} targetSubject - Odabrani predmet
+   */
+  function getStudentSubjectLinks(students, targetSubject) {
+    const links = [];
+    students.forEach((student) => {
+      let url = student.href;
+      if (!url) { return; }
+
+      let alignRight = student.querySelector(".right")
+      let doc = getPage(url);
+
+      [...doc.querySelectorAll("#content a.ed-row")].forEach((subject) => {
+        subject.firstChild.textContent.trim() == targetSubject && subject.href && links.push({
+          alignRight: alignRight, href: subject.href
+        });
+      });
+    });
+    loadStudents(links);
+  }
+
+  /**
+   * Učitava prosjeke i statistiku svih učenika.
+   * @param {HTMLCollection|Object} students - Učenici: Link + Mjesto elementa za prosjeke
+   */
+  function loadStudents(students) {
     plusButton.classList.add("plusClicked");
 
-    let studentsQueue = [];
-    let students = document.querySelectorAll("#content > a.student");
     let totalGradesEach = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
     let totalAvgsEach = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
     let totalAvgs = 0, totalAvgsRoundedSum = 0;
     let totalGradesCount = 0, totalGradesSum = 0;
-
-    var startTime = Date.now();
+    let startTime = Date.now();
+    let studentsQueue = [];
     students.forEach((student) => {
       studentsQueue.push(getAverage(student));
     });
 
+    // Promise se može izostaviti jer svi su requestovi synchronous
     Promise.all(studentsQueue).then((values) => {
       console.log("[e-D+] Vrijeme učitavanja (ms): " + (Date.now() - startTime));
 
@@ -71,7 +150,8 @@
 
       let totalAvgContainer = document.createElement("div");
       totalAvgContainer.className = "classAvg";
-      totalAvgContainer.innerHTML = "Prosjek razreda: " + totalRoundedAvg + '<sup>?</sup><div class="stats"> \
+      totalAvgContainer.innerHTML = "Prosjek razreda: " + totalRoundedAvg +
+      '<sup>?</sup><div class="stats"> \
       <table class="statsTable"> \
         <tbody> \
             <tr> \
@@ -121,22 +201,18 @@
     });
   }
 
+  /**
+   * Izračunava prosjek učenika i popunjava podatke za statistiku.
+   * @param {HTMLElement|Object} student
+   */
   function getAverage(student) {
     return new Promise((resolve) => {
 
       let url = student.href;
-      console.log(url);
-
       if (!url) { resolve(false); return; }
-
-      let parser = new DOMParser();
-      let xhr = new XMLHttpRequest();
-      xhr.open("GET", url, false);
-      xhr.send();
+      let doc = getPage(url);
 
       try {
-
-        let doc = parser.parseFromString(xhr.responseText, "text/html");
         let totalGrades = 0, gradesSum = 0;
         let gradesEach = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
 
@@ -152,7 +228,7 @@
           }
         });
 
-        let alignRight = student.querySelector(".right");
+        let alignRight = student.alignRight || student.querySelector(".right");
         let averageContainer = document.createElement("div");
         let numOfGradesContainer = document.createElement("div");
         let avgNumber = gradesSum / totalGrades;
@@ -168,7 +244,6 @@
         numOfGradesContainer.textContent = totalGrades;
         averageContainer.title = "Prosjek ocjena";
         numOfGradesContainer.title = "Broj ocjena";
-        console.log(avgNumber, totalGrades);
 
         alignRight.appendChild(averageContainer);
         alignRight.appendChild(numOfGradesContainer);
@@ -178,8 +253,18 @@
         console.log(e);
         resolve(false);
       }
-
     });
+  }
+
+  /**
+   * Dobavlja i parsira HTML dokument.
+   * @param {String} url - Link stranice koja se preuzima
+   */
+  function getPage(url) {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url, false);
+    xhr.send();
+    return parser.parseFromString(xhr.responseText, "text/html");
   }
 
 })();

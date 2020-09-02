@@ -1,13 +1,11 @@
 (() => {
   "use strict";
 
-  console.log("e-Dnevnik Plus za nastavnike je omogućen!");
+  console.log("e-dnevnik Plus za nastavnike je omogućen.");
 
+  // Izračunava prosjek za tablicu ocjena u predmetu
   let gradesTable = document.getElementById("tbl-ocjene");
-  if (!gradesTable) {
-    return false;
-  }
-
+  if (!gradesTable) return false;
   let totalGrades = 0, gradesSum = 0;
 
   gradesTable.querySelectorAll("td[id^='grade']").forEach((gradeBlock) => {
@@ -21,18 +19,17 @@
   });
 
   let avgNumber = gradesSum / totalGrades;
-
   avgNumber = isNaN(avgNumber) ? "0,00" : avgNumber.toFixed(2).toString().replace(".", ",");
   let avgTitle = "Broj ocjena: " + totalGrades + " | Zbroj ocjena: " + gradesSum;
   let avg = document.getElementById("prosjek");
 
-  if (avg) {
+  if (avg) {  // Prostor za prosjek već postoji
 
     avg.textContent = "Prosjek ocjena: " + avgNumber;
     avg.title = avgTitle;
     avg.className = "plus-avg";
 
-  } else {
+  } else {  // Izrada prostora za prosjek ispod tablice
 
     let old = document.getElementById("tbl-prosjek");
     old && old.remove();
