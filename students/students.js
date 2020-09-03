@@ -69,7 +69,7 @@
 
       subjectsList.appendChild(row).onclick = () => {
         if (selectedSubject) return;
-        selectedSubject = "(" + subject + ")";
+        selectedSubject = " (" + subject + ")";
         plusButton.firstChild.textContent = "Učitavanje...";
 
         // Brisanje prethodno kreiranih elemenata za ponovni odabir
@@ -124,14 +124,14 @@
       console.log("[e-D+] Vrijeme učitavanja (ms): " + (Date.now() - startTime));
 
       for (let i = 0; i < values.length; i++) {
-        if (!values[i]) {continue;}
+        if (!values[i]) continue;
 
         let gradesEach = values[i].gradesEach;
         let gradesCount = values[i].gradesCount;
         let gradesSum = values[i].gradesSum;
         let avg = Math.round(values[i].avg);
 
-        if (!gradesCount) {continue;}
+        if (!gradesCount) continue;
 
         for (let k in gradesEach) {
           totalGradesEach[k] += gradesEach[k];
@@ -154,7 +154,7 @@
 
       let totalAvgContainer = document.createElement("div");
       totalAvgContainer.className = "classAvg";
-      totalAvgContainer.innerHTML = "Prosjek razreda " + selectedSubject + ": " + totalRoundedAvg +
+      totalAvgContainer.innerHTML = "Prosjek razreda" + selectedSubject + ": " + totalRoundedAvg +
       '<sup>?</sup><div class="stats"> \
       <table class="statsTable"> \
         <tbody> \
