@@ -4,6 +4,7 @@
   // Tip korisnika (Administrator > Ravnatelj > Stručni suradnik > Razrednik > Nastavnik)
   const userType = document.querySelector(".user .type").textContent.trim();
   const parser = new DOMParser();
+  let selectedSubject = "";
 
   // Stvaranje gumba 'Plus'
   let randomButton = document.getElementsByClassName("icon-random")[0];
@@ -35,18 +36,17 @@
   function plusClicked() {
 
     // Gumb je moguće kliknuti samo jednom
-    if (plusButtonClicked) return false;
+    if (plusButtonClicked) return;
     plusButtonClicked = true;
 
     // Popis učenika
     let students = document.querySelectorAll("#content > a.student");
-    if (!students.length) {
-      plusButton.classList.add("plusClicked");
-      return false;
-    }
+    if (!students.length) return plusButton.classList.add("plusClicked");
 
     if (userType == "nastavnik") {
-      return loadStudents(students);  // Izravno učitavanje
+      plusButton.textContent = "Učitavanje...";
+      setTimeout(() => loadStudents(students));
+      return;  // Izravno učitavanje
     }
 
     // Korisnik bira koji predmet se uzima za svakog učenika
@@ -68,9 +68,13 @@
       row.textContent = subject;
 
       subjectsList.appendChild(row).onclick = () => {
+        if (selectedSubject) return;
+        selectedSubject = "(" + subject + ")";
+        plusButton.textContent = "Učitavanje...";
+        plusButton.style.maxWidth = "100px";
 
         // Klikom na predmet dobavljaju se linkovi od svakog učenika prema tome predmetu
-        getStudentSubjectLinks(students, subject);
+        setTimeout(() => getStudentSubjectLinks(students, subject));
       };
     });
   }
@@ -84,16 +88,18 @@
     const links = [];
     students.forEach((student) => {
       let url = student.href;
-      if (!url) { return; }
+      if (!url) return;
 
       let alignRight = student.querySelector(".right")
       let doc = getPage(url);
+      let subjects = doc.querySelectorAll("#content a.ed-row");
 
-      [...doc.querySelectorAll("#content a.ed-row")].forEach((subject) => {
-        subject.firstChild.textContent.trim() == targetSubject && subject.href && links.push({
-          alignRight: alignRight, href: subject.href
-        });
-      });
+      for (let i = 0; i < subjects.length; i++) {
+        const subject = subjects[i];
+        if (subject.firstChild.textContent.trim() == targetSubject && subject.href) {
+          return links.push({alignRight: alignRight, href: subject.href});
+        }
+      }
     });
     loadStudents(links);
   }
@@ -150,14 +156,14 @@
 
       let totalAvgContainer = document.createElement("div");
       totalAvgContainer.className = "classAvg";
-      totalAvgContainer.innerHTML = "Prosjek razreda: " + totalRoundedAvg +
+      totalAvgContainer.innerHTML = "Prosjek razreda " + selectedSubject + ": " + totalRoundedAvg +
       '<sup>?</sup><div class="stats"> \
       <table class="statsTable"> \
         <tbody> \
             <tr> \
               <td></td> \
-              <td>Zaključne ocjene</td> \
-              <td>Sve ocjene</td> \
+              <td id="final-grades">Zaključne ocjene<sup>?</sup></td> \
+              <td id="final-total">Sve ocjene<sup>?</sup></td> \
             </tr> \
             <tr> \
               <td>Odličnih:</td> \

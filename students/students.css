@@ -1,6 +1,6 @@
 .plus-button {
   position: relative;
-  max-width: 50px;
+  max-width: 100px;
   /* background: #d3d3d3 !important; */ /* unavailable */
   background: #2296da !important;
   margin-left: 5px;
@@ -10,6 +10,10 @@
   cursor: pointer;
   background: #2297dac2 !important;
   /*cursor: help */ /* unavailable */
+}
+
+.title-select.left {
+  position: absolute;
 }
 
 .content>.right>.button2 {
@@ -48,6 +52,7 @@
 
 .studentAvg,
 .classAvg {
+  display: inline-block;
   background-color: #00a2ff0c;
   margin-left: 20px;
   font-size: 16px;
@@ -59,7 +64,6 @@
 }
 
 .studentAvg {
-  display: inline-block;
   transform: scale(.1);
   animation: easeAvg 1s forwards;
 }
@@ -77,7 +81,6 @@
 
 .classAvg {
   position: relative;
-  display: inline-block;
   transform: translateX(-60px);
   animation: easeTotalAvg 1s cubic-bezier(0, 0.23, 0.57, 1.5) forwards;
   transition: background-color 250ms;
@@ -127,6 +130,24 @@
   border-color: #D3D3D4;
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
+}
+
+#final-grades::after {
+  content: "(zaokruženi prosjeci)";
+}
+
+#final-total::after {
+  content: "(sve ocjene iz tablica)";
+}
+
+#final-grades::after, #final-total::after {
+  font-weight: normal;
+  display: none;
+  font-size: 14px;
+}
+
+#final-grades:hover::after, #final-total:hover::after {
+  display: block;
 }
 
 .plus-subject-row {

@@ -5,7 +5,7 @@
 
   // Izračunava prosjek za tablicu ocjena u predmetu
   let gradesTable = document.getElementById("tbl-ocjene");
-  if (!gradesTable) return false;
+  if (!gradesTable) return;
   let totalGrades = 0, gradesSum = 0;
 
   gradesTable.querySelectorAll("td[id^='grade']").forEach((gradeBlock) => {
