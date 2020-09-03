@@ -1,5 +1,5 @@
-# e-dnevnik-Plus-za-nastavnike
-e-dnevnik Plus za nastavnike je proširenje za preglednike.
+# e-Dnevnik-Plus-za-nastavnike
+e-Dnevnik Plus za nastavnike je proširenje za preglednike.
 
 Preuzimanje: https://chrome.google.com/webstore/detail/e-dnevnik-plus-za-nastavn/jefappmpehdgllijkjpekdmkbmbigbnl
 

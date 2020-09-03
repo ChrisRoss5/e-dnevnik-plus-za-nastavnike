@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  console.log("e-dnevnik Plus za nastavnike je omogućen.");
+  console.log("e-Dnevnik Plus za nastavnike je omogućen.");
 
   // Izračunava prosjek za tablicu ocjena u predmetu
   let gradesTable = document.getElementById("tbl-ocjene");
