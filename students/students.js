@@ -70,8 +70,10 @@
       subjectsList.appendChild(row).onclick = () => {
         if (selectedSubject) return;
         selectedSubject = "(" + subject + ")";
-        plusButton.textContent = "Učitavanje...";
-        plusButton.style.maxWidth = "100px";
+        plusButton.firstChild.textContent = "Učitavanje...";
+
+        // Brisanje prethodno kreiranih elemenata za ponovni odabir
+        document.querySelectorAll(".studentAvg, .classAvg").forEach(el => el.remove());
 
         // Klikom na predmet dobavljaju se linkovi od svakog učenika prema tome predmetu
         setTimeout(() => getStudentSubjectLinks(students, subject));
@@ -109,17 +111,13 @@
    * @param {HTMLCollection|Object} students - Učenici: Link + Mjesto elementa za prosjeke
    */
   function loadStudents(students) {
-    plusButton.classList.add("plusClicked");
-
     let totalGradesEach = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
     let totalAvgsEach = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
     let totalAvgs = 0, totalAvgsRoundedSum = 0;
     let totalGradesCount = 0, totalGradesSum = 0;
     let startTime = Date.now();
     let studentsQueue = [];
-    students.forEach((student) => {
-      studentsQueue.push(getAverage(student));
-    });
+    students.forEach((student) => studentsQueue.push(getAverage(student)));
 
     // Promise se može izostaviti jer svi su requestovi synchronous
     Promise.all(studentsQueue).then((values) => {
@@ -204,6 +202,13 @@
       </table>';
 
       contentTitle.appendChild(totalAvgContainer);
+
+      if (selectedSubject) {
+        plusButton.firstChild.textContent = "Odaberite predmet";
+        selectedSubject = "";
+      } else {
+        plusButton.classList.add("plusClicked");  // Za nastavnika je kraj priče
+      }
     });
   }
 
