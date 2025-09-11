@@ -1,13 +1,22 @@
 (() => {
   "use strict";
 
-  // Tip korisnika (Administrator > Ravnatelj > Stručni suradnik > Razrednik > Nastavnik)
-  const userType = document.querySelector(".user .type").textContent.trim();
+  // Tip korisnika (Administrator > Ravnatelj > Stručni suradnik > Razrednik > Nastavnik) [NE KORISTI SE]
+  const userType = document.querySelector(".role")?.textContent?.trim();
+  if (!userType) {
+    console.log("[e-D+] Nije moguće utvrditi tip korisnika.");
+  }
+
   const parser = new DOMParser();
   let selectedSubject = "";
 
   // Stvaranje gumba 'Plus'
-  let randomButton = document.getElementsByClassName("icon-random")[0];
+  let randomButton = document.querySelector(".icon-random");
+  if (!randomButton) {
+    console.log("[e-D+] Nije pronađen gumb za nasumičan odabir.");
+    return;
+  }
+
   let plusButton = document.createElement("div");
   let plusButtonClicked = false;
   plusButton.className = "button2 plus-button";
@@ -34,7 +43,6 @@
    * @listens onclick
    */
   function plusClicked() {
-
     // Gumb je moguće kliknuti samo jednom
     if (plusButtonClicked) return;
     plusButtonClicked = true;
@@ -43,10 +51,20 @@
     let students = document.querySelectorAll("#content > a.student");
     if (!students.length) return plusButton.classList.add("plusClicked");
 
-    if (userType == "nastavnik") {
+    const adminUrl = "https://e-dnevnik.skole.hr/admin_class/class_courses";
+    const isAdmin = document.querySelector(
+      "a[href*='/admin_class/class_courses']"
+    );
+    const multiSubjectUrl =
+      "https://e-dnevnik.skole.hr/grade_book/course_activities";
+    const isMaybeMultiSubject = document.querySelector(
+      "a[href*='/grade_book/course_activities']"
+    );
+
+    if (!isAdmin && !isMaybeMultiSubject) {
       plusButton.textContent = "Učitavanje...";
       setTimeout(() => loadStudents(students));
-      return;  // Izravno učitavanje
+      return; // Izravno učitavanje
     }
 
     // Korisnik bira koji predmet se uzima za svakog učenika
@@ -59,9 +77,31 @@
     plusButton.appendChild(subjectsList);
 
     // Dobavljanje predmeta
-    const doc = getPage("https://e-dnevnik.skole.hr/admin_class/class_courses");
-    doc.querySelectorAll("#content .class_course").forEach(subject => {
-      subject = subject.firstChild.textContent.trim().replace(/^\d*\./, "").trim();
+    const doc = getPage(isAdmin ? adminUrl : multiSubjectUrl);
+    const rows = doc.querySelectorAll(
+      isAdmin ? "#content .class_course" : "#content a.ed-row"
+    );
+
+    console.log("[e-D+] Pronađeno predmeta: " + rows.length);
+
+    if (!isAdmin && rows.length == 1) {
+      plusButton.textContent = "Učitavanje...";
+      setTimeout(() => loadStudents(students));
+      selectedSubject =
+        " (" +
+        rows[0].firstChild.textContent
+          .trim()
+          .replace(/^\d*\./, "")
+          .trim() +
+        ")";
+      return; // Izravno učitavanje
+    }
+
+    rows.forEach((subject) => {
+      subject = subject.firstChild.textContent
+        .trim()
+        .replace(/^\d*\./, "")
+        .trim();
 
       const row = document.createElement("div");
       row.className = "plus-subject-row";
@@ -73,7 +113,9 @@
         plusButton.firstChild.textContent = "Učitavanje...";
 
         // Brisanje prethodno kreiranih elemenata za ponovni odabir
-        document.querySelectorAll(".studentAvg, .classAvg").forEach(el => el.remove());
+        document
+          .querySelectorAll(".studentAvg, .classAvg")
+          .forEach((el) => el.remove());
 
         // Klikom na predmet dobavljaju se linkovi od svakog učenika prema tome predmetu
         setTimeout(() => getStudentSubjectLinks(students, subject));
@@ -92,14 +134,27 @@
       let url = student.href;
       if (!url) return;
 
-      let alignRight = student.querySelector(".right")
+      let alignRight = student.querySelector(".student-row-info");
+      if (!alignRight) {
+        alignRight = document.createElement("div");
+        alignRight.className = "student-row-info";
+        student.style.setProperty("position", "relative");
+        student.appendChild(alignRight);
+      }
+
       let doc = getPage(url);
       let subjects = doc.querySelectorAll("#content a.ed-row");
 
       for (let i = 0; i < subjects.length; i++) {
         const subject = subjects[i];
-        if (subject.firstChild.textContent.trim() == targetSubject && subject.href) {
-          return links.push({alignRight: alignRight, href: subject.href});
+        if (
+          subject.firstChild.textContent
+            .trim()
+            .replace(/^\d*\./, "")
+            .trim() == targetSubject &&
+          subject.href
+        ) {
+          return links.push({ alignRight, href: subject.href });
         }
       }
     });
@@ -111,17 +166,27 @@
    * @param {HTMLCollection|Object} students - Učenici: Link + Mjesto elementa za prosjeke
    */
   function loadStudents(students) {
-    let totalGradesEach = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
-    let totalAvgsEach = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
-    let totalAvgs = 0, totalAvgsRoundedSum = 0;
-    let totalGradesCount = 0, totalGradesSum = 0;
+    let totalGradesEach = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    let totalAvgsEach = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    let totalAvgs = 0,
+      totalAvgsRoundedSum = 0;
+    let totalGradesCount = 0,
+      totalGradesSum = 0;
     let startTime = Date.now();
     let studentsQueue = [];
+
+    let contentTitle = document.querySelector(".content > .title-select");
+    if (!contentTitle) {
+      console.log("[e-D+] Nije pronađen prostor za statistiku.");
+    }
+
     students.forEach((student) => studentsQueue.push(getAverage(student)));
 
     // Promise se može izostaviti jer svi su requestovi synchronous
     Promise.all(studentsQueue).then((values) => {
-      console.log("[e-D+] Vrijeme učitavanja (ms): " + (Date.now() - startTime));
+      console.log(
+        "[e-D+] Vrijeme učitavanja (ms): " + (Date.now() - startTime)
+      );
 
       for (let i = 0; i < values.length; i++) {
         if (!values[i]) continue;
@@ -144,18 +209,23 @@
         totalAvgs++;
       }
 
-      let contentTitle = document.querySelector(".content>.title-select");
       let totalRoundedAvg = totalAvgsRoundedSum / totalAvgs;
-      totalRoundedAvg = isNaN(totalRoundedAvg) ? "0,00" :
-        totalRoundedAvg.toFixed(2).toString().replace(".", ",");
+      totalRoundedAvg = isNaN(totalRoundedAvg)
+        ? "0,00"
+        : totalRoundedAvg.toFixed(2).toString().replace(".", ",");
       let totalGradesAvg = totalGradesSum / totalGradesCount;
-      totalGradesAvg = isNaN(totalGradesAvg) ? "0,00" :
-        totalGradesAvg.toFixed(2).toString().replace(".", ",");
+      totalGradesAvg = isNaN(totalGradesAvg)
+        ? "0,00"
+        : totalGradesAvg.toFixed(2).toString().replace(".", ",");
 
       let totalAvgContainer = document.createElement("div");
       totalAvgContainer.className = "classAvg";
-      totalAvgContainer.innerHTML = "Prosjek razreda" + selectedSubject + ": " + totalRoundedAvg +
-      '<sup>?</sup><div class="stats"> \
+      totalAvgContainer.innerHTML =
+        "Prosjek razreda" +
+        selectedSubject +
+        ": " +
+        totalRoundedAvg +
+        '<sup>?</sup><div class="stats"> \
       <table class="statsTable"> \
         <tbody> \
             <tr> \
@@ -165,49 +235,77 @@
             </tr> \
             <tr> \
               <td>Odličnih:</td> \
-              <td>' + (totalAvgsEach["5"] || "") + '</td> \
-              <td>' + (totalGradesEach["5"] || "") + '</td> \
+              <td>' +
+        (totalAvgsEach["5"] || "") +
+        "</td> \
+              <td>" +
+        (totalGradesEach["5"] || "") +
+        "</td> \
             </tr> \
             <tr> \
               <td>Vrlo dobrih:</td> \
-              <td>' + (totalAvgsEach["4"] || "") + '</td> \
-              <td>' + (totalGradesEach["4"] || "") + '</td> \
+              <td>" +
+        (totalAvgsEach["4"] || "") +
+        "</td> \
+              <td>" +
+        (totalGradesEach["4"] || "") +
+        "</td> \
             </tr> \
             <tr> \
               <td>Dobrih:</td> \
-              <td>' + (totalAvgsEach["3"] || "") + '</td> \
-              <td>' + (totalGradesEach["3"] || "") + '</td> \
+              <td>" +
+        (totalAvgsEach["3"] || "") +
+        "</td> \
+              <td>" +
+        (totalGradesEach["3"] || "") +
+        "</td> \
             </tr> \
             <tr> \
               <td>Dovoljnih:</td> \
-              <td>' + (totalAvgsEach["2"] || "") + '</td> \
-              <td>' + (totalGradesEach["2"] || "") + '</td> \
+              <td>" +
+        (totalAvgsEach["2"] || "") +
+        "</td> \
+              <td>" +
+        (totalGradesEach["2"] || "") +
+        "</td> \
             </tr> \
             <tr> \
               <td>Nedovoljnih:</td> \
-              <td>' + (totalAvgsEach["1"] || "") + '</td> \
-              <td>' + (totalGradesEach["1"] || "") + '</td> \
+              <td>" +
+        (totalAvgsEach["1"] || "") +
+        "</td> \
+              <td>" +
+        (totalGradesEach["1"] || "") +
+        "</td> \
             </tr> \
             <tr> \
               <td>Ukupno ocjena:</td> \
-              <td>' + totalAvgs + '</td> \
-              <td>' + totalGradesCount + '</td> \
+              <td>" +
+        totalAvgs +
+        "</td> \
+              <td>" +
+        totalGradesCount +
+        "</td> \
             </tr> \
             <tr> \
               <td>Prosjek razreda:</td> \
-              <td>' + totalRoundedAvg + '</td> \
-              <td>' + totalGradesAvg + '</td> \
+              <td>" +
+        totalRoundedAvg +
+        "</td> \
+              <td>" +
+        totalGradesAvg +
+        "</td> \
             </tr> \
         </tbody> \
-      </table>';
+      </table>";
 
-      contentTitle.appendChild(totalAvgContainer);
+      contentTitle?.appendChild(totalAvgContainer);
 
       if (selectedSubject) {
         plusButton.firstChild.textContent = "Odaberite predmet";
         selectedSubject = "";
       } else {
-        plusButton.classList.add("plusClicked");  // Za nastavnika je kraj priče
+        plusButton.classList.add("plusClicked"); // Za nastavnika je kraj priče
       }
     });
   }
@@ -218,39 +316,66 @@
    */
   function getAverage(student) {
     return new Promise((resolve) => {
-
       let url = student.href;
-      if (!url) { resolve(false); return; }
+      if (!url) {
+        console.log("[e-D+] Link učenika nije dostupan.");
+        resolve(false);
+        return;
+      }
       let doc = getPage(url);
 
       try {
-        let totalGrades = 0, gradesSum = 0;
-        let gradesEach = {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0};
+        let totalGrades = 0,
+          gradesSum = 0;
+        let gradesEach = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
 
-        let gradesTable = doc.getElementById("tbl-ocjene");
-        gradesTable.querySelectorAll("td[id^='grade']").forEach((gradeBlock) => {
-          let grades = gradeBlock.innerText.match(/\d+/g);
-          if (grades) {
-            for (let i = 0; i < grades.length; i++) {
-              gradesSum += parseInt(grades[i]);
-              gradesEach[grades[i].toString()]++;
-              totalGrades++;
+        let gradesTable = doc.querySelector("#tbl-ocjene");
+        if (!gradesTable) {
+          console.log("[e-D+] Nije pronađena tablica ocjena.");
+          resolve(false);
+          return;
+        }
+
+        gradesTable
+          .querySelectorAll("td[id^='grade']")
+          .forEach((gradeBlock) => {
+            let grades = gradeBlock.innerText.match(/\d+/g);
+            if (grades) {
+              for (let i = 0; i < grades.length; i++) {
+                gradesSum += parseInt(grades[i]);
+                gradesEach[grades[i].toString()]++;
+                totalGrades++;
+              }
             }
-          }
-        });
+          });
 
-        let alignRight = student.alignRight || student.querySelector(".right");
+        let alignRight = student.alignRight;
+        if (!alignRight) {
+          alignRight = document.createElement("div");
+          alignRight.className = "student-row-info";
+          student.style.setProperty("position", "relative");
+          student.appendChild(alignRight);
+        }
+
         let averageContainer = document.createElement("div");
         let numOfGradesContainer = document.createElement("div");
         let avgNumber = gradesSum / totalGrades;
-        resolve({gradesEach: gradesEach, gradesCount: totalGrades, gradesSum: gradesSum, avg: avgNumber});
+        resolve({
+          gradesEach: gradesEach,
+          gradesCount: totalGrades,
+          gradesSum: gradesSum,
+          avg: avgNumber,
+        });
 
         if (avgNumber < 1.5) {
           averageContainer.style.color = "red";
         }
 
-        avgNumber = isNaN(avgNumber) ? "0,00" : avgNumber.toFixed(2).toString().replace(".", ",");
-        averageContainer.className = numOfGradesContainer.className = "studentAvg";
+        avgNumber = isNaN(avgNumber)
+          ? "0,00"
+          : avgNumber.toFixed(2).toString().replace(".", ",");
+        averageContainer.className = numOfGradesContainer.className =
+          "studentAvg";
         averageContainer.textContent = avgNumber;
         numOfGradesContainer.textContent = totalGrades;
         averageContainer.title = "Prosjek ocjena";
@@ -258,10 +383,8 @@
 
         alignRight.appendChild(averageContainer);
         alignRight.appendChild(numOfGradesContainer);
-
-      } catch(e) {
-
-        console.log(e);
+      } catch (e) {
+        console.log("[e-D+] ", e);
         resolve(false);
       }
     });
@@ -277,5 +400,4 @@
     xhr.send();
     return parser.parseFromString(xhr.responseText, "text/html");
   }
-
 })();

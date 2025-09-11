@@ -16,18 +16,15 @@
   position: absolute;
 }
 
-.content>.right>.button2 {
-  transition: transform 1s,
-    opacity 1s .5s,
-    width .5s .5s,
-    margin .5s .5s,
-    padding .5s .5s,
+.content > .right > .button2 {
+  transition: transform 1s, opacity 1s 0.5s, width 0.5s 0.5s, margin 0.5s 0.5s,
+    padding 0.5s 0.5s;
 }
 
 .plusClicked {
   animation: easePlusButton1 1s cubic-bezier(0.6, -0.28, 0.74, 0.05) forwards,
-    easePlusButton2 .4s .6s forwards,
-    easePlusButton3 .5s 1s forwards;
+    easePlusButton2 0.4s 0.6s forwards, easePlusButton3 0.5s 1s forwards,
+    easePlusButton4 0.01s 1.5s forwards;
 }
 
 @keyframes easePlusButton1 {
@@ -50,6 +47,12 @@
   }
 }
 
+@keyframes easePlusButton4 {
+  100% {
+    display: none;
+  }
+}
+
 .studentAvg,
 .classAvg {
   display: inline-block;
@@ -64,7 +67,7 @@
 }
 
 .studentAvg {
-  transform: scale(.1);
+  transform: scale(0.1);
   animation: easeAvg 1s forwards;
 }
 
@@ -97,14 +100,16 @@
   background-color: white;
 }
 
-.classAvg:hover .stats, .plus-button:hover .plus-button-down-note {
+.classAvg:hover .stats,
+.plus-button:hover .plus-button-down-note {
   visibility: visible;
   opacity: 1;
   top: 30px;
   transition: opacity 250ms, 250ms top;
 }
 
-.stats, .plus-button-down-note {
+.stats,
+.plus-button-down-note {
   visibility: hidden;
   opacity: 0;
   position: absolute;
@@ -127,7 +132,7 @@
   min-width: fit-content;
   font-weight: bold;
   color: gray;
-  border-color: #D3D3D4;
+  border-color: #d3d3d4;
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
 }
@@ -140,13 +145,15 @@
   content: "(sve ocjene iz tablica)";
 }
 
-#final-grades::after, #final-total::after {
+#final-grades::after,
+#final-total::after {
   font-weight: normal;
   display: none;
   font-size: 14px;
 }
 
-#final-grades:hover::after, #final-total:hover::after {
+#final-grades:hover::after,
+#final-total:hover::after {
   display: block;
 }
 
@@ -197,7 +204,7 @@
   width: 33.33% !important;
 }
 
-.classAvg>sup {
+.classAvg > sup {
   padding-left: 3px;
   font-size: 14px;
   font-weight: bold;
@@ -205,4 +212,11 @@
 
 a.ed-row.student:hover .studentAvg {
   background: #fff;
+}
+
+.student-row-info {
+  position: absolute;
+  right: 10px;
+  transform: translateY(-50%);
+  top: 55%;
 }
